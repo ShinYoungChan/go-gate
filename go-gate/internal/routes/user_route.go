@@ -7,5 +7,5 @@ import (
 )
 
 func SetupUserRoutes(r *gin.Engine, h *handler.UserHandler) {
-
+	r.POST("/signup", h.SignUp)
 }

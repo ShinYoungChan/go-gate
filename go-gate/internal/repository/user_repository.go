@@ -1,6 +1,10 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"go-gate/internal/models"
+
+	"gorm.io/gorm"
+)
 
 type UserRepository struct {
 	db *gorm.DB
@@ -8,4 +12,8 @@ type UserRepository struct {
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) CreateUser(user *models.User) error {
+	return r.db.Create(user).Error
 }
