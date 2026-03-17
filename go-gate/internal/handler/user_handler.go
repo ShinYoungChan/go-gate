@@ -1,6 +1,6 @@
 package handler
 
-import "gin/internal/service"
+import "go-gate/internal/service"
 
 type UserHandler struct {
 	service *service.UserService
