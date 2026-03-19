@@ -19,6 +19,13 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required,min=6"`
 }
 
+type EntryRequest struct {
+	UserID     uint    `json:"user_id" binding:"required"`
+	LocationID uint    `json:"location_id" binding:"required"`
+	Lat        float64 `json:"lat" binding:"required"`
+	Lon        float64 `json:"lon" binding:"required"`
+}
+
 type UserHandler struct {
 	service *service.UserService
 }
@@ -58,4 +65,20 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "로그인 성공!"})
+}
+
+func (h *UserHandler) PostEntry(c *gin.Context) {
+	var req EntryRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.service.VerifyEntry(req.UserID, req.Lat, req.Lon, req.LocationID); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "실패", "error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "입장 성공!"})
 }
