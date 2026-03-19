@@ -17,7 +17,7 @@ type UserMembership struct {
 	UserID      uint      `gorm:"index"` // 조회 성능을 위한 인덱스 추가
 	ItemID      uint      `gorm:"index"` // 조회 성능을 위한 인덱스 추가
 	SttDt       time.Time `gorm:"type:timestamp;not null"`
-	EndAt       time.Time `gorm:"type:timestamp;not null"`
+	EndDt       time.Time `gorm:"type:timestamp;not null"`
 	IsCountType bool      `gorm:"not null"`
 	Count       int       `gorm:"not null"`
 	IsValid     bool      `gorm:"default:true;not null"`

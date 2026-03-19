@@ -98,12 +98,27 @@ func (s *UserService) VerifyEntry(userID uint, userLat, userLon float64, locatio
 	// 4-1. 기간 체크
 	now := time.Now()
 	// 시작기간 전 이거나 종료기한 이후면 에러 처리
-	if now.Before(userMembership.SttDt) || now.After(userMembership.EndAt) {
+	if now.Before(userMembership.SttDt) || now.After(userMembership.EndDt) {
 		return errors.New("이용 가능 기간이 아닙니다.")
 	}
+
+	// 4-1-1. 회원권 사용 여부 체크
+	if !userMembership.IsValid {
+		return errors.New("정지된 회원권입니다.")
+	}
+
+	// 4-1-2. 1분안에 입장했던 기록이있는지
+	lastLog, err := s.logRepo.GetLastAccessLog(userID)
+	if lastLog != nil {
+		fmt.Println("최근 입장 시간:", lastLog.AccessedAt)
+		if time.Since(lastLog.AccessedAt) < 1*time.Minute {
+			return errors.New("방금 입장하셨습니다. 잠시 후 다시 시도해주세요.")
+		}
+	}
+
 	// 4-2. 회원권 종류 체크(정기권, 횟수권)
-	// 4-3. 횟수권인 경우 잔여 횟수 확인
 	if userMembership.IsCountType {
+		// 4-3. 횟수권인 경우 잔여 횟수 확인
 		if userMembership.Count > 0 {
 			userMembership.Count--
 		} else {
