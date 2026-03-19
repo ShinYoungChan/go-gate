@@ -17,8 +17,17 @@ func main() {
 	db := database.InitDB()
 
 	// 의존성 주입
+	// 1. DB
+	locRepo := repository.NewLocationRepository(db)
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+	userMembershipRepo := repository.NewUserMembershipRepository(db)
+	accessLogRepo := repository.NewAccessLogRepository(db)
+
+	// 2. Service
+	locService := service.NewLocationService(locRepo)
+	userService := service.NewUserService(userRepo, userMembershipRepo, accessLogRepo, locService)
+
+	// 3. Handler
 	userHandler := handler.NewUserHandler(userService)
 
 	r := gin.Default()
