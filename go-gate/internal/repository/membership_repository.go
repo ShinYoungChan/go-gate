@@ -7,15 +7,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserMembershipRepository struct {
+type UserMembershipRepository interface {
+	GetUserWithMembership(userID uint) (*models.UserMembership, error)
+	UpdateUserMembership(membership *models.UserMembership) error
+}
+
+type userMembershipRepository struct {
 	db *gorm.DB
 }
 
-func NewUserMembershipRepository(db *gorm.DB) *UserMembershipRepository {
-	return &UserMembershipRepository{db: db}
+func NewUserMembershipRepository(db *gorm.DB) UserMembershipRepository {
+	return &userMembershipRepository{db: db}
 }
 
-func (r *UserMembershipRepository) GetUserWithMembership(userID uint) (*models.UserMembership, error) {
+func (r *userMembershipRepository) GetUserWithMembership(userID uint) (*models.UserMembership, error) {
 	var userMembership models.UserMembership
 	err := r.db.Where("user_id = ?", userID).First(&userMembership).Error
 	if err != nil {
@@ -29,6 +34,6 @@ func (r *UserMembershipRepository) GetUserWithMembership(userID uint) (*models.U
 	return &userMembership, nil
 }
 
-func (r *UserMembershipRepository) UpdateMembership(membership *models.UserMembership) error {
+func (r *userMembershipRepository) UpdateUserMembership(membership *models.UserMembership) error {
 	return r.db.Save(membership).Error
 }

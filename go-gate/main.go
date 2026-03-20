@@ -25,13 +25,17 @@ func main() {
 
 	// 2. Service
 	locService := service.NewLocationService(locRepo)
-	userService := service.NewUserService(userRepo, userMembershipRepo, accessLogRepo, locService)
+	membershipService := service.NewUserMembershipService(userMembershipRepo)
+	userService := service.NewUserService(userRepo)
+	entryService := service.NewEntryService(membershipService, accessLogRepo, locService)
 
 	// 3. Handler
 	userHandler := handler.NewUserHandler(userService)
+	entryHandler := handler.NewEntryHandler(entryService)
 
 	r := gin.Default()
 	routes.SetupUserRoutes(r, userHandler)
+	routes.SetupEntryRoutes(r, entryHandler)
 
 	r.Run(":8080")
 }
