@@ -8,10 +8,14 @@ import (
 )
 
 type EntryRequest struct {
-	UserID     uint    `json:"user_id" binding:"required"`
-	LocationID uint    `json:"location_id" binding:"required"`
-	Lat        float64 `json:"lat" binding:"required"`
-	Lon        float64 `json:"lon" binding:"required"`
+	Token string  `json:"token" binding:"required"`
+	Lat   float64 `json:"lat" binding:"required"`
+	Lon   float64 `json:"lon" binding:"required"`
+}
+
+type TokenRequest struct {
+	UserID     uint `json:"user_id" binding:"required"`
+	LocationID uint `json:"location_id" binding:"required"`
 }
 
 type EntryHandler struct {
@@ -30,7 +34,7 @@ func (h *EntryHandler) PostEntry(c *gin.Context) {
 		return
 	}
 
-	userMembership, err := h.service.VerifyEntry(req.UserID, req.Lat, req.Lon, req.LocationID)
+	userMembership, err := h.service.VerifyEntry(req.Token, req.Lat, req.Lon)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "실패", "error": err.Error()})
 		return
@@ -40,5 +44,25 @@ func (h *EntryHandler) PostEntry(c *gin.Context) {
 		"message":         "입장 성공!",
 		"remaining_count": userMembership.Count,
 		"end_dt":          userMembership.EndDt.Format("2006-01-02"),
+	})
+}
+
+func (h *EntryHandler) GetEntryToken(c *gin.Context) {
+	var req TokenRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "잘못된 요청입니다."})
+		return
+	}
+
+	token, err := h.service.GenerateEntryToken(req.UserID, req.LocationID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"entry_token": token,
+		"expires_in":  30, // 30초 남은것을 알려주기 위함
 	})
 }
