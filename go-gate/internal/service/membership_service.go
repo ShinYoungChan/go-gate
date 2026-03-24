@@ -37,16 +37,6 @@ func (s *UserMembershipService) ValidateEligibility(userID uint) (*models.UserMe
 		return nil, errors.New("정지된 회원권입니다.")
 	}
 
-	// 3. 회원권 종류 체크(정기권, 횟수권)
-	if userMembership.IsCountType {
-		// 3-1. 횟수권인 경우 잔여 횟수 확인
-		if userMembership.Count > 0 {
-			userMembership.Count--
-		} else {
-			// 우선 에러 리턴, 이후 회원군 구매 로직으로 이동..
-			return nil, errors.New("횟수권을 모두 사용했습니다.")
-		}
-	}
 	return userMembership, nil
 }
 

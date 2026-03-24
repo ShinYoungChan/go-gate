@@ -6,6 +6,8 @@ import (
 	"go-gate/internal/models"
 	"go-gate/internal/repository"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type EntryService struct {
@@ -22,7 +24,34 @@ func NewEntryService(membershipService *UserMembershipService, logRepo *reposito
 	}
 }
 
-func (s *EntryService) VerifyEntry(userID uint, userLat, userLon float64, locationID uint) (*models.UserMembership, error) {
+func (s *EntryService) parseAndValidateToken(tokenString string) (uint, uint, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte("qr_secret_key_1234"), nil
+	})
+
+	if err != nil || !token.Valid {
+		return 0, 0, errors.New("유효하지 않거나 만료된 QR 코드입니다.")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, 0, errors.New("토큰 데이터 형식이 잘못되었습니다.")
+	}
+
+	// 주의: JWT 숫자는 기본적으로 float64로 파싱되므로 uint로 형변환 필요
+	userID := uint(claims["user_id"].(float64))
+	locationID := uint(claims["location_id"].(float64))
+
+	return userID, locationID, nil
+}
+
+func (s *EntryService) VerifyEntry(tokenString string, userLat, userLon float64) (*models.UserMembership, error) {
+	// 토큰 파싱
+	userID, locationID, err := s.parseAndValidateToken(tokenString)
+
+	if err != nil {
+		return nil, err // 토큰 만료 or 서명 틀림
+	}
 	// 1. DB에서 장소(Location) 정보 가져오기
 	location, err := s.locationService.GetLocation(locationID)
 	if err != nil {
@@ -54,6 +83,18 @@ func (s *EntryService) VerifyEntry(userID uint, userLat, userLon float64, locati
 			return nil, errors.New("방금 입장하셨습니다. 잠시 후 다시 시도해주세요.")
 		}
 	}
+
+	// 3. 회원권 종류 체크(정기권, 횟수권)
+	if userMembership.IsCountType {
+		// 3-1. 횟수권인 경우 잔여 횟수 확인
+		if userMembership.Count > 0 {
+			userMembership.Count--
+		} else {
+			// 우선 에러 리턴, 이후 회원군 구매 로직으로 이동..
+			return nil, errors.New("횟수권을 모두 사용했습니다.")
+		}
+	}
+
 	// 6. 차감 및 저장, 입장 로그 저장 access_log 호출
 	err = s.membershipService.UpdateMembership(userMembership)
 
@@ -79,14 +120,29 @@ func (s *EntryService) VerifyEntry(userID uint, userLat, userLon float64, locati
 	return userMembership, nil
 }
 
-func (s *EntryService) GenerateEntryToken(userID uint) (string, error) {
+func (s *EntryService) GenerateEntryToken(userID, locationID uint) (string, error) {
 	// 1. 유효한 회원인지 먼저 체크 (이미 짠 로직 재활용)
 	_, err := s.membershipService.ValidateEligibility(userID)
 
 	if err != nil {
 		return "", err // 회원권 없으면 QR 생성 X
 	}
-	// 2. 현재 시간과 정보를 섞어서 암호화된 문자열 생성
-	// 3. Redis나 메모리에 "이 토큰은 30초간 유효해"라고 저장 (선택사항)
-	return "token_abc_123", nil
+	// 2. Claims 설정
+	claims := jwt.MapClaims{
+		"user_id":     userID,
+		"location_id": locationID,
+		"exp":         time.Now().Add(30 * time.Second).Unix(), // 30초 유효
+		"iat":         time.Now().Unix(),                       // 토큰발행시간
+	}
+	// 3. 토큰 생성 및 서명
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// secret_key 하드코딩.. 추후 환경변수로 변경 예정
+	secretKey := []byte("qr_secret_key_1234")
+	tokenString, err := token.SignedString(secretKey)
+
+	if err != nil {
+		return "", errors.New("토큰 생성 실패")
+	}
+	return tokenString, nil
 }
