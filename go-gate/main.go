@@ -7,12 +7,19 @@ import (
 	"go-gate/internal/repository"
 	"go-gate/internal/routes"
 	"go-gate/internal/service"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	fmt.Println("Main Start!")
+
+	// 1. .env 파일 로드
+	if err := godotenv.Load("go.env"); err != nil {
+		log.Fatal(".env 파일을 찾을 수 없습니다.")
+	}
 
 	db := database.InitDB()
 
@@ -39,6 +46,7 @@ func main() {
 	r := gin.Default()
 	routes.SetupUserRoutes(r, userHandler)
 	routes.SetupEntryRoutes(r, entryHandler)
+	routes.SetupPaymentRoutes(r, paymentHandler)
 
 	r.Run(":8080")
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"go-gate/internal/dto"
 	"go-gate/internal/service"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -30,10 +31,13 @@ func (h *PaymentHandler) ConfirmPayment(c *gin.Context) {
 	userID, _ := strconv.Atoi(userIDStr)
 	// 3. 서비스 호출: h.service.ApprovePayment(req, userID)
 	// 추후 JWT 인증하면 c.GET 으로 변경 후 사용 예정
-	if err := h.service.ApprovePayment(req, uint(userID)); err != nil {
+	result, err := h.service.ApprovePayment(req, uint(userID))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	log.Printf("결제 성공 데이터: %+v", result)
 	// 4. 결과 응답: 성공 시 200 OK, 실패 시 에러 코드
-	c.JSON(http.StatusOK, gin.H{"message": "구매 성공!"})
+	c.JSON(http.StatusOK, result)
 }

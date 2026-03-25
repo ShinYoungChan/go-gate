@@ -18,6 +18,10 @@ func (r *PaymentRepository) GetDB() *gorm.DB {
 	return r.db
 }
 
-func (r *PaymentRepository) CreatePaymentLog(log *models.PaymentLog) error {
-	return r.db.Create(log).Error
+func (r *PaymentRepository) CreatePaymentLog(tx *gorm.DB, log *models.PaymentLog) error {
+	db := r.db
+	if tx != nil {
+		db = tx
+	}
+	return db.Create(log).Error
 }
