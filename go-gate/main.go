@@ -22,16 +22,19 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	userMembershipRepo := repository.NewUserMembershipRepository(db)
 	accessLogRepo := repository.NewAccessLogRepository(db)
+	paymentRepo := repository.NewPaymentRepository(db)
 
 	// 2. Service
 	locService := service.NewLocationService(locRepo)
 	membershipService := service.NewUserMembershipService(userMembershipRepo)
 	userService := service.NewUserService(userRepo)
 	entryService := service.NewEntryService(membershipService, accessLogRepo, locService)
+	paymentService := service.NewPaymentService(paymentRepo, userMembershipRepo)
 
 	// 3. Handler
 	userHandler := handler.NewUserHandler(userService)
 	entryHandler := handler.NewEntryHandler(entryService)
+	paymentHandler := handler.NewPaymentHandler(paymentService)
 
 	r := gin.Default()
 	routes.SetupUserRoutes(r, userHandler)

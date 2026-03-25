@@ -36,7 +36,7 @@ func InitDB() *gorm.DB {
 		log.Fatal("DB 연결 실패: ", err)
 	}
 
-	if err = db.AutoMigrate(&models.User{}, &models.MembershipItem{}, &models.UserMembership{}, &models.Location{}, &models.AccessLog{}); err != nil {
+	if err = db.AutoMigrate(&models.User{}, &models.MembershipItem{}, &models.UserMembership{}, &models.Location{}, &models.AccessLog{}, &models.PaymentLog{}); err != nil {
 		log.Fatal("DB 마이그레이션 실패: ", err)
 	}
 
