@@ -10,6 +10,8 @@ import (
 type UserMembershipRepository interface {
 	GetUserWithMembership(userID uint) (*models.UserMembership, error)
 	UpdateUserMembership(membership *models.UserMembership) error
+	GetMembershipItem(itemID uint) (*models.MembershipItem, error)
+	CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error
 }
 
 type userMembershipRepository struct {
@@ -36,4 +38,23 @@ func (r *userMembershipRepository) GetUserWithMembership(userID uint) (*models.U
 
 func (r *userMembershipRepository) UpdateUserMembership(membership *models.UserMembership) error {
 	return r.db.Save(membership).Error
+}
+
+func (r *userMembershipRepository) GetMembershipItem(itemID uint) (*models.MembershipItem, error) {
+	var membershipItem models.MembershipItem
+	err := r.db.Where("id = ?", itemID).First(&membershipItem).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &membershipItem, nil
+}
+
+func (r *userMembershipRepository) CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error {
+	db := r.db
+	if tx != nil {
+		db = tx
+	}
+	return db.Create(membership).Error
 }
