@@ -67,10 +67,25 @@ func (s *PaymentService) ApprovePayment(req dto.PaymentRequest, userID uint) (*d
 	defer resp.Body.Close()
 	fmt.Println("토스API 종료")
 
+	bodyBytes, _ := io.ReadAll(resp.Body)
+
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		log.Printf("토스 에러 상세 사유: %s", string(body))
+		log.Printf("토스 에러 상세 사유: %s", string(bodyBytes))
 		return nil, errors.New("토스 승인 거절: 결제 정보를 확인해주세요")
+	}
+
+	// 요청금액과 승인 금액 비교
+	var tossResp map[string]interface{}
+
+	if err := json.Unmarshal(bodyBytes, &tossResp); err != nil {
+		return nil, err
+	}
+
+	actualAmount := uint64(tossResp["totalAmount"].(float64))
+
+	if actualAmount != uint64(req.Amount) {
+		log.Printf("[보안 경고] 금액 불일치! 요청: %d, 실제: %d", req.Amount, actualAmount)
+		return nil, errors.New("결제 금액이 요청 정보와 일치하지 않습니다.")
 	}
 
 	// 3. [성공] DB 트랜잭션 시작
@@ -142,9 +157,43 @@ func (s *PaymentService) ApprovePayment(req dto.PaymentRequest, userID uint) (*d
 
 	// 트랜잭션 오류 발생시
 	if err != nil {
-		log.Printf("결제 승인 트랜잭션 실패: %v", err)
-		return nil, err
+		log.Printf("결제 승인 트랜잭션 실패 결제 취소 시도: %v", err)
+		cancelErr := s.cancelTossPayment(req.PaymentKey, "서버 내부 DB 오류로 인한 자동 취소")
+		if cancelErr != nil {
+			log.Printf("[ERROR] 결제 취소 실패. 수동 환불 필요: %s", req.PaymentKey)
+		}
+		return nil, errors.New("서비스 처리 중 오류가 발생하여 결제가 자동 취소되었습니다.")
 	}
 
 	return &res, nil
+}
+
+func (s *PaymentService) cancelTossPayment(paymentKey, reason string) error {
+	log.Printf("결제 취소 API 시작")
+	secretKey := os.Getenv("TOSS_SECRET_KEY")
+	authHeader := "Basic " + base64.StdEncoding.EncodeToString([]byte(secretKey+":"))
+
+	cancelData := map[string]string{"cancelReason": reason}
+	jsonBody, _ := json.Marshal(cancelData)
+
+	url := fmt.Sprintf("https://api.tosspayments.com/v1/payments/%s/cancel", paymentKey)
+
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err // 통신 에러
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("[토스 취소 거절 사유]: %s", string(body))
+		return errors.New("토스 취소 API 호출 실패")
+	}
+	log.Printf("[SUCCESS] 결제 취소 완료: %s (사유: %s)", paymentKey, reason)
+	return nil
 }
