@@ -41,3 +41,30 @@ func (h *PaymentHandler) ConfirmPayment(c *gin.Context) {
 	// 4. 결과 응답: 성공 시 200 OK, 실패 시 에러 코드
 	c.JSON(http.StatusOK, result)
 }
+
+func (h *PaymentHandler) GetPaymentHistory(c *gin.Context) {
+	// JWT 인증 로직 없어서 param으로 받은 후 추후 변경 예정
+	userIdStr := c.Param("id")
+
+	userID, _ := strconv.Atoi(userIdStr)
+
+	userPaymentLogs, err := h.service.GetUserPaymentList(uint(userID))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "내역 조회 중 오류 발생"})
+		return
+	}
+
+	if len(userPaymentLogs) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "결제 내역이 없습니다.",
+			"data":    []interface{}{},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "조회 성공!",
+		"data":    userPaymentLogs,
+	})
+}

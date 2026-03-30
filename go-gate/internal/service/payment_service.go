@@ -197,3 +197,7 @@ func (s *PaymentService) cancelTossPayment(paymentKey, reason string) error {
 	log.Printf("[SUCCESS] 결제 취소 완료: %s (사유: %s)", paymentKey, reason)
 	return nil
 }
+
+func (s *PaymentService) GetUserPaymentList(userID uint) ([]models.PaymentLog, error) {
+	return s.paymentRepo.PaymentLogFindByUserID(userID)
+}
