@@ -19,6 +19,9 @@ go get -u github.com/glebarez/sqlite (https://github.com/glebarez/sqlite)
 # GORM 라이브러리 드라이버 교체
 go get -u github.com/glebarez/sqlite
 
+#flutter dio 패키지 설치
+flutter pub add dio
+
 ```
 
 
