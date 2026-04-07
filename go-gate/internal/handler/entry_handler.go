@@ -2,6 +2,7 @@ package handler
 
 import (
 	"go-gate/internal/service"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,11 @@ type EntryRequest struct {
 type TokenRequest struct {
 	UserID     uint `json:"user_id" binding:"required"`
 	LocationID uint `json:"location_id" binding:"required"`
+}
+
+type TokenResponse struct {
+	Token   string `json:"token"`
+	Expires int    `json: "expires"`
 }
 
 type EntryHandler struct {
@@ -51,18 +57,25 @@ func (h *EntryHandler) GetEntryToken(c *gin.Context) {
 	var req TokenRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "잘못된 요청입니다."})
 		return
 	}
 
 	token, err := h.service.GenerateEntryToken(req.UserID, req.LocationID)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
+	res := TokenResponse{
+		Token:   token,
+		Expires: 30,
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"entry_token": token,
-		"expires_in":  30, // 30초 남은것을 알려주기 위함
+		"message": "토큰 생성 성공",
+		"data":    res,
 	})
 }

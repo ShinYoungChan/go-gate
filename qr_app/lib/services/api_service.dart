@@ -11,7 +11,8 @@ class ApiService {
     dio = Dio(
       BaseOptions(
         // ⚠️ 안드로이드 에뮬레이터라면 10.0.2.2, iOS라면 localhost를 쓰세요!
-        baseUrl: 'http://localhost:8080', 
+        baseUrl: 'http://localhost:8080',
+        contentType: 'application/json',
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 3),
       ),
@@ -23,15 +24,44 @@ class ApiService {
     try {
       final response = await dio.post(
         '/login', // Go 백엔드에서 만든 로그인 경로
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
       return response;
     } on DioException catch (e) {
       // 에러가 나면 콘솔에 찍어줍니다.
       print("통신 에러 발생: ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> getUserInfo(String userId) async {
+    try {
+      // URL 뒤에 /:id 대신 실제 ID를 붙여서 요청합니다.
+      // 예: /user/info/123
+      return await dio.get('/user/info/$userId');
+    } on DioException catch (e) {
+      print("유저 정보 로드 실패 (ID: $userId): ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> getMembershipInfo(String userId) async {
+    try {
+      return await dio.get('/membership/info/$userId');
+    } on DioException catch (e) {
+      print("유저 멤버십 정보 로드 실패 (ID: $userId): ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> getQrCode(String userId, String locationId) async {
+    try {
+      return await dio.post(
+        '/api/v1/entry/token',
+        data: {"user_id": int.parse(userId), "location_id": int.parse(locationId)},
+      );
+    } on DioException catch (e) {
+      print("QR 정보 로드 실패: ${e.message}");
       return e.response;
     }
   }

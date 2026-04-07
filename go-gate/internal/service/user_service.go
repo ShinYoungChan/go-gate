@@ -60,3 +60,16 @@ func (s *UserService) AuthenticateUser(email, password string) error {
 	}
 	return nil
 }
+
+func (s *UserService) GetUser(userID uint) (*models.User, error) {
+	user, err := s.repo.GetUserById(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("회원권을 가지고 있지 않습니다.")
+	}
+
+	return user, nil
+}

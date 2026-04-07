@@ -41,12 +41,14 @@ func main() {
 
 	// 3. Handler
 	userHandler := handler.NewUserHandler(userService)
+	userMembershipHandler := handler.NewUserMembershipHandler(membershipService)
 	entryHandler := handler.NewEntryHandler(entryService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
 	r := gin.Default()
 	r.Use(cors.Default())
 	routes.SetupUserRoutes(r, userHandler)
+	routes.SetupMembershipRoutes(r, userMembershipHandler)
 	routes.SetupEntryRoutes(r, entryHandler)
 	routes.SetupPaymentRoutes(r, paymentHandler)
 
