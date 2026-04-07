@@ -15,6 +15,19 @@ func NewUserMembershipService(repo repository.UserMembershipRepository) *UserMem
 	return &UserMembershipService{repo: repo}
 }
 
+func (s *UserMembershipService) GetUserMembership(userID uint) (*models.UserMembership, error) {
+	userMebership, err := s.repo.GetUserWithMembership(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if userMebership == nil {
+		return nil, errors.New("회원권을 가지고 있지 않습니다.")
+	}
+
+	return userMebership, nil
+}
+
 func (s *UserMembershipService) ValidateEligibility(userID uint) (*models.UserMembership, error) {
 	userMembership, err := s.repo.GetUserWithMembership(userID)
 	if err != nil {

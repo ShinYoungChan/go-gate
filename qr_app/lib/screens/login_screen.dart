@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart'; // 아까 설치한 dio
 import 'package:qr_app/services/api_service.dart';
+import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,11 +20,23 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     print("로그인 시도: $email / $password");
-    // 괄호 ()를 붙여서 인스턴스를 가져온 뒤 호출
-    final response = await ApiService().login(email, password); 
+
+    // 서버에 요청 보내기
+    final response = await ApiService().login(email, password);
 
     if (response != null && response.statusCode == 200) {
-      print("성공: ${response.data}");
+      // ✅ 로그인 성공 시 화면 이동!
+      if (!mounted) return; // 위젯이 화면에 살아있는지 확인 (안전장치)
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } else {
+      // 로그인 실패 알림
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('로그인 실패: 정보를 확인해주세요.')));
     }
   }
 
@@ -49,7 +62,9 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: _handleLogin,
-              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
               child: const Text('로그인'),
             ),
           ],

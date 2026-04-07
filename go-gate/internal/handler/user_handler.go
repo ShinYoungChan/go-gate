@@ -3,6 +3,7 @@ package handler
 import (
 	"go-gate/internal/service"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,10 @@ type SignUpRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
+}
+
+type UserResponse struct {
+	Name string `json:"name"`
 }
 
 type UserHandler struct {
@@ -58,4 +63,26 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "로그인 성공!"})
+}
+
+func (h *UserHandler) GetUserInfo(c *gin.Context) {
+	userIdStr := c.Param("id")
+	userID, _ := strconv.Atoi(userIdStr)
+
+	user, err := h.service.GetUser(uint(userID))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "내역 조회 중 오류 발생"})
+	} else if user == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	}
+
+	res := UserResponse{
+		Name: user.Name,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "조회 성공",
+		"data":    res,
+	})
 }
