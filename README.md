@@ -22,6 +22,9 @@ go get -u github.com/glebarez/sqlite
 #flutter dio 패키지 설치
 flutter pub add dio
 
+#flutter chrome 실행
+flutter run -d chrome
+
 ```
 
 
@@ -30,8 +33,11 @@ users 데이터는 회원가입 데이터 전송으로 생성
 
 ```sql
 -- 1. 입장 장소 (위치 설정)
-INSERT INTO locations (name, latitude, longitude, address)
-VALUES ('강남 센터', 37.4979, 127.0276, '서울특별시 강남구 역삼동');
+INSERT INTO locations (place_name, category, lat, lon, address, image_url) VALUES
+('강남 피트니스 센터', '헬스장', 37.4979, 127.0276, '서울시 강남구 테헤란로 123', 'https://picsum.photos/id/10/200/200'),
+('서초 바디빌드', '헬스장', 37.4849, 127.0348, '서울시 서초구 강남대로 456', 'https://picsum.photos/id/11/200/200'),
+('홍대 머슬팩토리', '헬스장', 37.5565, 126.9239, '서울시 마포구 양화로 78', 'https://picsum.photos/id/12/200/200'),
+('잠실 요가 앤 필라테스', '요가', 37.5133, 127.1001, '서울시 송파구 올림픽로 567', 'https://picsum.photos/id/13/200/200');
 
 -- 2. 멤버십 상품 종류 (아이템 목록)
 INSERT INTO membership_items (title, type, duration_days, amount)

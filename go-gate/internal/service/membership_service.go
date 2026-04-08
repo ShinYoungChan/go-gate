@@ -15,8 +15,8 @@ func NewUserMembershipService(repo repository.UserMembershipRepository) *UserMem
 	return &UserMembershipService{repo: repo}
 }
 
-func (s *UserMembershipService) GetUserMembership(userID uint) (*models.UserMembership, error) {
-	userMebership, err := s.repo.GetUserWithMembership(userID)
+func (s *UserMembershipService) GetUserMembership(userID, locationID uint) (*models.UserMembership, error) {
+	userMebership, err := s.repo.GetUserWithMembership(userID, locationID)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +28,8 @@ func (s *UserMembershipService) GetUserMembership(userID uint) (*models.UserMemb
 	return userMebership, nil
 }
 
-func (s *UserMembershipService) ValidateEligibility(userID uint) (*models.UserMembership, error) {
-	userMembership, err := s.repo.GetUserWithMembership(userID)
+func (s *UserMembershipService) ValidateEligibility(userID, locationID uint) (*models.UserMembership, error) {
+	userMembership, err := s.repo.GetUserWithMembership(userID, locationID)
 	if err != nil {
 		return nil, err
 	}

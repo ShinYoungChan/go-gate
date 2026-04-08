@@ -7,6 +7,6 @@ import (
 )
 
 func SetupPaymentRoutes(r *gin.Engine, h *handler.PaymentHandler) {
-	r.POST("/payments/confirm/:id", h.ConfirmPayment)
+	r.POST("/payments/confirm/:user_id/:location_id", h.ConfirmPayment)
 	r.GET("payments/history/:id", h.GetPaymentHistory)
 }

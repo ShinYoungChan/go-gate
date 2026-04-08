@@ -27,10 +27,10 @@ func NewPaymentService(paymentRepo *repository.PaymentRepository, membershipRepo
 	return &PaymentService{paymentRepo: paymentRepo, membershipRepo: membershipRepo}
 }
 
-func (s *PaymentService) ApprovePayment(req dto.PaymentRequest, userID uint) (*dto.PaymentResponse, error) {
+func (s *PaymentService) ApprovePayment(req dto.PaymentRequest, userID, locationID uint) (*dto.PaymentResponse, error) {
 	fmt.Println("회원권 검증 시작")
 	// 1. [검증] 기존에 유효한 회원권이 있으면 구매 실패
-	userMembership, err := s.membershipRepo.GetUserWithMembership(userID)
+	userMembership, err := s.membershipRepo.GetUserWithMembership(userID, locationID)
 	if err != nil {
 		return nil, err
 	}

@@ -9,6 +9,7 @@ import (
 
 type LocationRepository interface {
 	GetLocationByID(id uint) (*models.Location, error)
+	GetAllLocations() ([]models.Location, error)
 }
 
 type locationRepository struct {
@@ -17,6 +18,12 @@ type locationRepository struct {
 
 func NewLocationRepository(db *gorm.DB) LocationRepository {
 	return &locationRepository{db: db}
+}
+
+func (r *locationRepository) GetAllLocations() ([]models.Location, error) {
+	var locations []models.Location
+	err := r.db.Find(&locations).Error
+	return locations, err
 }
 
 func (r *locationRepository) GetLocationByID(id uint) (*models.Location, error) {
