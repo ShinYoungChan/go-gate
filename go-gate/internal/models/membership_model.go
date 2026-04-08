@@ -5,6 +5,7 @@ import "time"
 // 이용권 종류 (membership_items)
 type MembershipItem struct {
 	ID           uint   `gorm:"primaryKey"`
+	LocationID   uint   `gorm:"index"` // 어느지점 상품인지
 	Title        string `gorm:"size:20;not null"`
 	Type         string `gorm:"size:20;not null"`
 	DurationDays int    `gorm:"not null"`
@@ -15,6 +16,7 @@ type MembershipItem struct {
 type UserMembership struct {
 	ID          uint      `gorm:"primaryKey"`
 	UserID      uint      `gorm:"index"` // 조회 성능을 위한 인덱스 추가
+	LocationID  uint      `gorm:"index"` // 어느지점 이용권인지..
 	ItemID      uint      `gorm:"index"` // 조회 성능을 위한 인덱스 추가
 	SttDt       time.Time `gorm:"type:timestamp;not null"`
 	EndDt       time.Time `gorm:"type:timestamp;not null"`

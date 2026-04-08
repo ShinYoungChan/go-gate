@@ -30,8 +30,8 @@ func (h *PaymentHandler) ConfirmPayment(c *gin.Context) {
 	userIDStr := c.Param("id")
 	userID, _ := strconv.Atoi(userIDStr)
 	// 3. 서비스 호출: h.service.ApprovePayment(req, userID)
-	// 추후 JWT 인증하면 c.GET 으로 변경 후 사용 예정
-	result, err := h.service.ApprovePayment(req, uint(userID))
+	// 추후 JWT 인증하면 c.GET 으로 변경 후 사용 예정 + 현재 locationID 관련 정보가 없어 하드코딩 추후 추가예정
+	result, err := h.service.ApprovePayment(req, uint(userID), 1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -69,7 +69,7 @@ func (s *EntryService) VerifyEntry(tokenString string, userLat, userLon float64)
 	}
 
 	// 4. 여기서부터는 멤버십 체크 로직 (SttDt, EndAt, Count 등)
-	userMembership, err := s.membershipService.ValidateEligibility(userID)
+	userMembership, err := s.membershipService.ValidateEligibility(userID, locationID)
 
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (s *EntryService) VerifyEntry(tokenString string, userLat, userLon float64)
 
 func (s *EntryService) GenerateEntryToken(userID, locationID uint) (string, error) {
 	// 1. 유효한 회원인지 먼저 체크 (이미 짠 로직 재활용)
-	_, err := s.membershipService.ValidateEligibility(userID)
+	_, err := s.membershipService.ValidateEligibility(userID, locationID)
 
 	if err != nil {
 		return "", err // 회원권 없으면 QR 생성 X

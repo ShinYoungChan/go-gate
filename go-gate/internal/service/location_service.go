@@ -15,6 +15,11 @@ func NewLocationService(repo repository.LocationRepository) *LocationService {
 	return &LocationService{repo: repo}
 }
 
+func (s *LocationService) GetLocationList() ([]models.Location, error) {
+	// 여기서 나중에 위도/경도 기반 거리 계산 등을 넣을 수 있습니다.
+	return s.repo.GetAllLocations()
+}
+
 func (s *LocationService) CalculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	const earthRadius = 6371000 // 지구 반지름 (미터 단위)
 

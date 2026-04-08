@@ -17,10 +17,12 @@ func NewUserMembershipHandler(service *service.UserMembershipService) *UserMembe
 }
 
 func (h *UserMembershipHandler) GetUserMembershipInfo(c *gin.Context) {
-	userIdStr := c.Param("id")
-	userID, _ := strconv.Atoi(userIdStr)
+	userIdStr := c.Param("user_id")
+	locIdStr := c.Param("location_id")
+	userId, _ := strconv.Atoi(userIdStr)
+	locationId, _ := strconv.Atoi(locIdStr)
 
-	userMembership, err := h.service.GetUserMembership(uint(userID))
+	userMembership, err := h.service.GetUserMembership(uint(userId), uint(locationId))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "내역 조회 중 오류 발생"})

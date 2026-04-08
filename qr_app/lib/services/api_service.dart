@@ -45,11 +45,11 @@ class ApiService {
     }
   }
 
-  Future<Response?> getMembershipInfo(String userId) async {
+  Future<Response?> checkUserMembership(String userId, String locationId) async {
     try {
-      return await dio.get('/membership/info/$userId');
+      return await dio.get('/membership/info/$userId/$locationId');
     } on DioException catch (e) {
-      print("유저 멤버십 정보 로드 실패 (ID: $userId): ${e.message}");
+      print("유저 멤버십 정보 로드 실패 (ID: $userId), (LocationID: $locationId): ${e.message}");
       return e.response;
     }
   }
@@ -62,6 +62,15 @@ class ApiService {
       );
     } on DioException catch (e) {
       print("QR 정보 로드 실패: ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> getLocations() async{
+    try{
+      return await dio.get('/api/v1/locations');
+    }on DioException catch(e){
+      print("장소 정보 로드 실패: ${e.message}");
       return e.response;
     }
   }

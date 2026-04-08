@@ -8,7 +8,7 @@ import (
 )
 
 type UserMembershipRepository interface {
-	GetUserWithMembership(userID uint) (*models.UserMembership, error)
+	GetUserWithMembership(userID, locationID uint) (*models.UserMembership, error)
 	UpdateUserMembership(membership *models.UserMembership) error
 	GetMembershipItem(itemID uint) (*models.MembershipItem, error)
 	CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error
@@ -22,9 +22,9 @@ func NewUserMembershipRepository(db *gorm.DB) UserMembershipRepository {
 	return &userMembershipRepository{db: db}
 }
 
-func (r *userMembershipRepository) GetUserWithMembership(userID uint) (*models.UserMembership, error) {
+func (r *userMembershipRepository) GetUserWithMembership(userID, locationID uint) (*models.UserMembership, error) {
 	var userMembership models.UserMembership
-	err := r.db.Where("user_id = ?", userID).First(&userMembership).Error
+	err := r.db.Where("user_id = ? AND location_id = ?", userID, locationID).First(&userMembership).Error
 	if err != nil {
 		// 에러가 데이터를 찾지 못한 건지 확인
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -44,6 +44,7 @@ func main() {
 	userMembershipHandler := handler.NewUserMembershipHandler(membershipService)
 	entryHandler := handler.NewEntryHandler(entryService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
+	locHandler := handler.NewLocationHandler(locService)
 
 	r := gin.Default()
 	r.Use(cors.Default())
@@ -51,6 +52,7 @@ func main() {
 	routes.SetupMembershipRoutes(r, userMembershipHandler)
 	routes.SetupEntryRoutes(r, entryHandler)
 	routes.SetupPaymentRoutes(r, paymentHandler)
+	routes.SetupLocationRoutes(r, locHandler)
 
 	r.Run(":8080")
 }

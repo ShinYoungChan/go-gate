@@ -7,5 +7,5 @@ import (
 )
 
 func SetupMembershipRoutes(r *gin.Engine, h *handler.UserMembershipHandler) {
-	r.GET("/membership/info/:id", h.GetUserMembershipInfo)
+	r.GET("/membership/info/:user_id/:location_id", h.GetUserMembershipInfo)
 }
