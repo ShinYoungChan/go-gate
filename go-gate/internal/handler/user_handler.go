@@ -21,7 +21,9 @@ type LoginRequest struct {
 }
 
 type UserResponse struct {
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	JoinDate string `json:"joindate"`
 }
 
 type UserHandler struct {
@@ -78,7 +80,9 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 	}
 
 	res := UserResponse{
-		Name: user.Name,
+		Name:     user.Name,
+		Email:    user.Email,
+		JoinDate: user.CreatedAt.String(),
 	}
 
 	c.JSON(http.StatusOK, gin.H{

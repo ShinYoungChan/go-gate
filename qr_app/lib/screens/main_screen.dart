@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'qr_screen.dart';
+import 'my_page_screen.dart';
 import '../services/api_service.dart'; // 💡 ApiService 임포트 확인
 
 class MainScreen extends StatefulWidget {
@@ -12,8 +13,11 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   List<dynamic> _locations = []; // 서버에서 받아올 데이터를 담을 공간
   String _userName = "로딩 중..."; // 유저 이름 초기값
+  String _userEmail = "";
+  String _joinDate = "";
   bool _isLoading = true;
   final String _fixedUserId = "1"; // 💡 userID 고정값 설정
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -46,6 +50,8 @@ class _MainScreenState extends State<MainScreen> {
       if (response != null && response.statusCode == 200) {
         setState(() {
           _userName = response.data['data']['name'] ?? "사용자";
+          _userEmail = response.data['data']['email'] ?? "이메일";
+          _joinDate = response.data['data']['joindate'] ?? "";
         });
       }
     } catch (e) {
@@ -78,51 +84,91 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        toolbarHeight: 80,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "안녕하세요, $_userName님!", // 유저 이름 연동
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              "입장하실 장소를 선택하세요",
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: _isLoading
+    // 탭별로 보여줄 화면 설정
+    final List<Widget> _pages = [
+      // [0번: 홈 탭] - 인사말을 리스트 상단에 포함
+      _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              // 💡 당겨서 새로고침 추가
               onRefresh: _fetchLocations,
-              child: _locations.isEmpty
-                  ? const Center(child: Text("등록된 장소가 없습니다."))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _locations.length,
-                      itemBuilder: (context, index) {
-                        final loc = _locations[index];
-                        return _buildLocationCard(loc);
-                      },
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // 💡 홈 화면에서만 보이는 인사말 (AppBar에서 이사 옴)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20, bottom: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "안녕하세요, $_userName님!",
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 24, // 크기를 조금 더 키워도 예쁩니다
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          "입장하실 장소를 선택하세요",
+                          style: TextStyle(color: Colors.grey, fontSize: 15),
+                        ),
+                      ],
                     ),
+                  ),
+
+                  // 장소 리스트 렌더링
+                  if (_locations.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 100),
+                        child: Text("등록된 장소가 없습니다."),
+                      ),
+                    )
+                  else
+                    // .map().toList()를 사용해 기존 리스트 카드들을 뿌려줍니다.
+                    ..._locations
+                        .map((loc) => _buildLocationCard(loc))
+                        .toList(),
+                ],
+              ),
             ),
+
+      // [1번: 결제 탭]
+      const Center(child: Text("결제 내역")),
+
+      // [2번: 내 정보 탭]
+      MyPageScreen(
+        userName: _userName,
+        userEmail: _userEmail,
+        joinData: _joinDate,
+      ),
+    ];
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      // AppBar를 아예 삭제하면 본문이 폰 맨 위(시계 있는 곳)까지 올라가므로 SafeArea를 사용
+      body: SafeArea(child: _pages[_selectedIndex]),
+
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "홈"),
+          BottomNavigationBarItem(icon: Icon(Icons.payment), label: "결제"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "내 정보"),
+        ],
+      ),
     );
   }
 

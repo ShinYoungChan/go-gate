@@ -106,7 +106,7 @@ class _QRScreenState extends State<QRScreen> {
           onPressed: () => Navigator.pop(context),
           child: const Text("< 장소 선택으로 돌아가기", style: TextStyle(color: Colors.black, fontSize: 12)),
         ),
-        leadingWidth: 150,
+        leadingWidth: 200,
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 
