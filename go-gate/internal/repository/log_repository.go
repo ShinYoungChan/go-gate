@@ -38,3 +38,9 @@ func (r *AccessLogRepository) GetLastAccessLog(userID uint) (*models.AccessLog, 
 
 	return &log, nil
 }
+
+func (r *AccessLogRepository) CountByUserID(userId uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.AccessLog{}).Where("user_id = ?", userId).Count(&count).Error
+	return count, err
+}

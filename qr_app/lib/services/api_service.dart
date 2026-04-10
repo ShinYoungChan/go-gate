@@ -74,4 +74,13 @@ class ApiService {
       return e.response;
     }
   }
+
+  Future<Response?> getUserSummary(String userId) async{
+    try{
+      return await dio.get('/user/mypage/$userId');
+    }on DioException catch(e){
+      print("유저 정보 로드 실패: ${e.message}");
+      return e.response;
+    }
+  }
 }

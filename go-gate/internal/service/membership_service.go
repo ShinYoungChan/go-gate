@@ -56,3 +56,7 @@ func (s *UserMembershipService) ValidateEligibility(userID, locationID uint) (*m
 func (s *UserMembershipService) UpdateMembership(membership *models.UserMembership) error {
 	return s.repo.UpdateUserMembership(membership)
 }
+
+func (s *UserMembershipService) GetTotalAmount(userId uint) (int64, error) {
+	return s.repo.SumPaymentAmountByUserID(userId)
+}

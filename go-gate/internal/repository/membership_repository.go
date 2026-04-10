@@ -12,6 +12,7 @@ type UserMembershipRepository interface {
 	UpdateUserMembership(membership *models.UserMembership) error
 	GetMembershipItem(itemID uint) (*models.MembershipItem, error)
 	CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error
+	SumPaymentAmountByUserID(userId uint) (int64, error)
 }
 
 type userMembershipRepository struct {
@@ -57,4 +58,10 @@ func (r *userMembershipRepository) CreateUserMembership(tx *gorm.DB, membership 
 		db = tx
 	}
 	return db.Create(membership).Error
+}
+
+func (r *userMembershipRepository) SumPaymentAmountByUserID(userId uint) (int64, error) {
+	var total int64
+	err := r.db.Model(&models.UserMembership{}).Where("user_id = ?", userId).Select("COALESCE(SUM(amount), 0)").Scan(&total).Error
+	return total, err
 }

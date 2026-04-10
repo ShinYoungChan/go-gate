@@ -8,12 +8,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService struct {
-	repo *repository.UserRepository
+type UserSummaryResponse struct {
+	EntryCount  int64 `json:"entry_count"`
+	TotalAmount int64 `json:"total_amount"`
 }
 
-func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+type UserService struct {
+	repo              *repository.UserRepository
+	accessLogService  *AccessLogService
+	membershipService *UserMembershipService
+}
+
+func NewUserService(repo *repository.UserRepository, as *AccessLogService, ms *UserMembershipService) *UserService {
+	return &UserService{
+		repo:              repo,
+		accessLogService:  as,
+		membershipService: ms,
+	}
 }
 
 func (s *UserService) SignUpUser(name, email, password string) error {
@@ -72,4 +83,23 @@ func (s *UserService) GetUser(userID uint) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *UserService) GetUserSummary(userId uint) (UserSummaryResponse, error) {
+	count, err := s.accessLogService.GetEntryCount(userId)
+
+	if err != nil {
+		return UserSummaryResponse{}, err
+	}
+
+	total, err := s.membershipService.GetTotalAmount(userId)
+
+	if err != nil {
+		return UserSummaryResponse{}, err
+	}
+
+	return UserSummaryResponse{
+		EntryCount:  count,
+		TotalAmount: total,
+	}, nil
 }
