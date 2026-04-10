@@ -75,8 +75,10 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "내역 조회 중 오류 발생"})
+		return
 	} else if user == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
 	}
 
 	res := UserResponse{
@@ -88,5 +90,22 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "조회 성공",
 		"data":    res,
+	})
+}
+
+func (h *UserHandler) GetUserSummary(c *gin.Context) {
+	userIdStr := c.Param("id")
+	userID, _ := strconv.Atoi(userIdStr)
+
+	summary, err := h.service.GetUserSummary(uint(userID))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "내역 조회 중 오류 발생"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "조회 성공",
+		"data":    summary,
 	})
 }

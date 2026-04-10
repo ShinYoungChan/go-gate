@@ -35,7 +35,8 @@ func main() {
 	// 2. Service
 	locService := service.NewLocationService(locRepo)
 	membershipService := service.NewUserMembershipService(userMembershipRepo)
-	userService := service.NewUserService(userRepo)
+	accessLogService := service.NewAccessLogService(accessLogRepo)
+	userService := service.NewUserService(userRepo, accessLogService, membershipService)
 	entryService := service.NewEntryService(membershipService, accessLogRepo, locService)
 	paymentService := service.NewPaymentService(paymentRepo, userMembershipRepo)
 
