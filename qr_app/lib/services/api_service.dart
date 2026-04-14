@@ -10,7 +10,7 @@ class ApiService {
   ApiService._internal() {
     dio = Dio(
       BaseOptions(
-        // ⚠️ 안드로이드 에뮬레이터라면 10.0.2.2, iOS라면 localhost를 쓰세요!
+        // 안드로이드 에뮬레이터라면 10.0.2.2, iOS라면 localhost를 사용
         baseUrl: 'http://localhost:8080',
         contentType: 'application/json',
         connectTimeout: const Duration(seconds: 5),
@@ -80,6 +80,15 @@ class ApiService {
       return await dio.get('/user/mypage/$userId');
     }on DioException catch(e){
       print("유저 정보 로드 실패: ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> getLocationMemberships(String locationId) async{
+    try{
+      return await dio.get('/location/membership/$locationId');
+    }on DioException catch(e){
+      print("멤버쉽 정보 로드 실패: ${e.message}");
       return e.response;
     }
   }

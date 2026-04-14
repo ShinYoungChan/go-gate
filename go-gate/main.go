@@ -34,7 +34,7 @@ func main() {
 
 	// 2. Service
 	locService := service.NewLocationService(locRepo)
-	membershipService := service.NewUserMembershipService(userMembershipRepo)
+	membershipService := service.NewMembershipService(userMembershipRepo)
 	accessLogService := service.NewAccessLogService(accessLogRepo)
 	userService := service.NewUserService(userRepo, accessLogService, membershipService)
 	entryService := service.NewEntryService(membershipService, accessLogRepo, locService)
@@ -42,7 +42,7 @@ func main() {
 
 	// 3. Handler
 	userHandler := handler.NewUserHandler(userService)
-	userMembershipHandler := handler.NewUserMembershipHandler(membershipService)
+	userMembershipHandler := handler.NewMembershipHandler(membershipService)
 	entryHandler := handler.NewEntryHandler(entryService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 	locHandler := handler.NewLocationHandler(locService)

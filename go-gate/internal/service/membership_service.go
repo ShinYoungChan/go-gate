@@ -7,15 +7,15 @@ import (
 	"time"
 )
 
-type UserMembershipService struct {
-	repo repository.UserMembershipRepository
+type MembershipService struct {
+	repo repository.MembershipRepository
 }
 
-func NewUserMembershipService(repo repository.UserMembershipRepository) *UserMembershipService {
-	return &UserMembershipService{repo: repo}
+func NewMembershipService(repo repository.MembershipRepository) *MembershipService {
+	return &MembershipService{repo: repo}
 }
 
-func (s *UserMembershipService) GetUserMembership(userID, locationID uint) (*models.UserMembership, error) {
+func (s *MembershipService) GetUserMembership(userID, locationID uint) (*models.UserMembership, error) {
 	userMebership, err := s.repo.GetUserWithMembership(userID, locationID)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (s *UserMembershipService) GetUserMembership(userID, locationID uint) (*mod
 	return userMebership, nil
 }
 
-func (s *UserMembershipService) ValidateEligibility(userID, locationID uint) (*models.UserMembership, error) {
+func (s *MembershipService) ValidateEligibility(userID, locationID uint) (*models.UserMembership, error) {
 	userMembership, err := s.repo.GetUserWithMembership(userID, locationID)
 	if err != nil {
 		return nil, err
@@ -53,10 +53,14 @@ func (s *UserMembershipService) ValidateEligibility(userID, locationID uint) (*m
 	return userMembership, nil
 }
 
-func (s *UserMembershipService) UpdateMembership(membership *models.UserMembership) error {
+func (s *MembershipService) UpdateMembership(membership *models.UserMembership) error {
 	return s.repo.UpdateUserMembership(membership)
 }
 
-func (s *UserMembershipService) GetTotalAmount(userId uint) (int64, error) {
+func (s *MembershipService) GetTotalAmount(userId uint) (int64, error) {
 	return s.repo.SumPaymentAmountByUserID(userId)
+}
+
+func (s *MembershipService) GetAvailableMemberships(locationID uint) ([]models.MembershipItem, error) {
+	return s.repo.GetItemsByLocationID(locationID)
 }

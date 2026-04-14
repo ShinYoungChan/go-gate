@@ -11,12 +11,12 @@ import (
 )
 
 type EntryService struct {
-	membershipService *UserMembershipService
+	membershipService *MembershipService
 	logRepo           *repository.AccessLogRepository
 	locationService   *LocationService
 }
 
-func NewEntryService(membershipService *UserMembershipService, logRepo *repository.AccessLogRepository, locService *LocationService) *EntryService {
+func NewEntryService(membershipService *MembershipService, logRepo *repository.AccessLogRepository, locService *LocationService) *EntryService {
 	return &EntryService{
 		membershipService: membershipService,
 		logRepo:           logRepo,

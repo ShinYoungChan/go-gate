@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart'; // 패키지 추가 필요
 import '../services/api_service.dart';
+import 'membership_purchase_screen.dart';
 import 'dart:async';
 
 class QRScreen extends StatefulWidget {
@@ -38,8 +39,11 @@ class _QRScreenState extends State<QRScreen> {
     setState(() => _isLoading = true);
     try {
       // 1. 이용권 확인
-      final passRes = await ApiService().checkUserMembership(widget.userId, widget.location['ID'].toString());
-      
+      final passRes = await ApiService().checkUserMembership(
+        widget.userId,
+        widget.location['ID'].toString(),
+      );
+
       if (passRes != null && passRes.statusCode == 200) {
         bool isValid = passRes.data['data']['IsValid'] ?? false;
         setState(() {
@@ -79,14 +83,14 @@ class _QRScreenState extends State<QRScreen> {
   Future<void> _refreshQrOnly() async {
     try {
       final response = await ApiService().getQrCode(
-        widget.userId, 
-        widget.location['ID'].toString()
+        widget.userId,
+        widget.location['ID'].toString(),
       );
 
       if (response != null && response.statusCode == 200) {
         setState(() {
           // 서버에서 받은 실제 토큰값으로 QR 생성
-          _qrData = response.data['data']['token']; 
+          _qrData = response.data['data']['token'];
           _startTimer(); // 갱신 후 타이머 재시작
         });
       }
@@ -104,12 +108,15 @@ class _QRScreenState extends State<QRScreen> {
         elevation: 0,
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("< 장소 선택으로 돌아가기", style: TextStyle(color: Colors.black, fontSize: 12)),
+          child: const Text(
+            "< 장소 선택으로 돌아가기",
+            style: TextStyle(color: Colors.black, fontSize: 12),
+          ),
         ),
         leadingWidth: 200,
       ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator()) 
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 children: [
@@ -124,6 +131,7 @@ class _QRScreenState extends State<QRScreen> {
             ),
     );
   }
+
   // 상단 장소 요약 (사진 상단 부분)
   Widget _buildHeaderCard() {
     return Padding(
@@ -138,16 +146,30 @@ class _QRScreenState extends State<QRScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(widget.location['ImageURL'], width: 60, height: 60, fit: BoxFit.cover),
+              child: Image.network(
+                widget.location['ImageURL'],
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(width: 15),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.location['PlaceName'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text(widget.location['Address'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  widget.location['PlaceName'],
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  widget.location['Address'],
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -165,21 +187,33 @@ class _QRScreenState extends State<QRScreen> {
     return Column(
       children: [
         const Icon(Icons.qr_code_2, size: 30),
-        const Text("입장용 QR 코드", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const Text("입구에서 이 QR 코드를 스캔해주세요", style: TextStyle(color: Colors.grey)),
+        const Text(
+          "입장용 QR 코드",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Text(
+          "입구에서 이 QR 코드를 스캔해주세요",
+          style: TextStyle(color: Colors.grey),
+        ),
         const SizedBox(height: 20),
-        
+
         // QR 코드 본체
-        _qrData.isNotEmpty 
-          ? QrImageView(data: _qrData, size: 200)
-          : const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
-          
+        _qrData.isNotEmpty
+            ? QrImageView(data: _qrData, size: 200)
+            : const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+
         const SizedBox(height: 10),
-        
+
         // 1. 만료 시간 (실시간 타이머 반영)
         Text(
-          "남은 시간: $_secondsRemaining초", 
-          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)
+          "남은 시간: $_secondsRemaining초",
+          style: const TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 20),
 
@@ -202,11 +236,15 @@ class _QRScreenState extends State<QRScreen> {
                 ),
                 child: Text(
                   isCountPass ? "횟수권" : "정기권",
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
-              
+
               // 횟수권일 때만 잔여 횟수 표기
               if (isCountPass) ...[
                 Row(
@@ -214,8 +252,12 @@ class _QRScreenState extends State<QRScreen> {
                   children: [
                     const Text("잔여 횟수: ", style: TextStyle(fontSize: 16)),
                     Text(
-                      "${membership['Count']}회", 
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue)
+                      "${membership['Count']}회",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
                     ),
                   ],
                 ),
@@ -233,9 +275,9 @@ class _QRScreenState extends State<QRScreen> {
 
         const SizedBox(height: 10),
         TextButton.icon(
-          onPressed: _refreshQrOnly, 
-          icon: const Icon(Icons.refresh), 
-          label: const Text("QR 코드 즉시 갱신")
+          onPressed: _refreshQrOnly,
+          icon: const Icon(Icons.refresh),
+          label: const Text("QR 코드 즉시 갱신"),
         ),
       ],
     );
@@ -247,11 +289,27 @@ class _QRScreenState extends State<QRScreen> {
       children: [
         const Icon(Icons.error_outline, size: 60, color: Colors.orange),
         const SizedBox(height: 16),
-        const Text("유효한 이용권이 없습니다.", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          "유효한 이용권이 없습니다.",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 24),
         ElevatedButton(
-          onPressed: () { /* 구매 페이지 이동 */ },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, minimumSize: const Size(200, 50)),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MembershipPurchaseScreen(
+                  locationId: widget.location['ID'], // 현재 QR 화면이 들고 있는 지점 ID 전달
+                  locationName: widget.location['PlaceName'], // (선택) 화면 상단에 보여줄 이름
+                ),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            minimumSize: const Size(200, 50),
+          ),
           child: const Text("이용권 구매하기", style: TextStyle(color: Colors.white)),
         ),
       ],
@@ -269,8 +327,14 @@ class _QRScreenState extends State<QRScreen> {
         children: [
           Text("이용 안내", style: TextStyle(fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
-          Text("• 해당 QR 코드는 1회성 입장용입니다.", style: TextStyle(fontSize: 12, color: Colors.grey)),
-          Text("• 캡쳐된 화면으로는 입장이 불가할 수 있습니다.", style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(
+            "• 해당 QR 코드는 1회성 입장용입니다.",
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          Text(
+            "• 캡쳐된 화면으로는 입장이 불가할 수 있습니다.",
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
         ],
       ),
     );
