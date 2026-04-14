@@ -20,10 +20,10 @@ import (
 
 type PaymentService struct {
 	paymentRepo    *repository.PaymentRepository
-	membershipRepo repository.UserMembershipRepository
+	membershipRepo repository.MembershipRepository
 }
 
-func NewPaymentService(paymentRepo *repository.PaymentRepository, membershipRepo repository.UserMembershipRepository) *PaymentService {
+func NewPaymentService(paymentRepo *repository.PaymentRepository, membershipRepo repository.MembershipRepository) *PaymentService {
 	return &PaymentService{paymentRepo: paymentRepo, membershipRepo: membershipRepo}
 }
 

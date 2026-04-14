@@ -16,10 +16,10 @@ type UserSummaryResponse struct {
 type UserService struct {
 	repo              *repository.UserRepository
 	accessLogService  *AccessLogService
-	membershipService *UserMembershipService
+	membershipService *MembershipService
 }
 
-func NewUserService(repo *repository.UserRepository, as *AccessLogService, ms *UserMembershipService) *UserService {
+func NewUserService(repo *repository.UserRepository, as *AccessLogService, ms *MembershipService) *UserService {
 	return &UserService{
 		repo:              repo,
 		accessLogService:  as,

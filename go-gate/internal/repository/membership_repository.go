@@ -7,23 +7,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserMembershipRepository interface {
+type MembershipRepository interface {
+	// 유저 회원권 관련
 	GetUserWithMembership(userID, locationID uint) (*models.UserMembership, error)
 	UpdateUserMembership(membership *models.UserMembership) error
-	GetMembershipItem(itemID uint) (*models.MembershipItem, error)
 	CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error
 	SumPaymentAmountByUserID(userId uint) (int64, error)
+
+	// 멤버십 관련
+	GetMembershipItem(itemID uint) (*models.MembershipItem, error)
+	GetItemsByLocationID(locationID uint) ([]models.MembershipItem, error)
 }
 
-type userMembershipRepository struct {
+type membershipRepository struct {
 	db *gorm.DB
 }
 
-func NewUserMembershipRepository(db *gorm.DB) UserMembershipRepository {
-	return &userMembershipRepository{db: db}
+func NewUserMembershipRepository(db *gorm.DB) MembershipRepository {
+	return &membershipRepository{db: db}
 }
 
-func (r *userMembershipRepository) GetUserWithMembership(userID, locationID uint) (*models.UserMembership, error) {
+func (r *membershipRepository) GetUserWithMembership(userID, locationID uint) (*models.UserMembership, error) {
 	var userMembership models.UserMembership
 	err := r.db.Where("user_id = ? AND location_id = ?", userID, locationID).First(&userMembership).Error
 	if err != nil {
@@ -37,11 +41,11 @@ func (r *userMembershipRepository) GetUserWithMembership(userID, locationID uint
 	return &userMembership, nil
 }
 
-func (r *userMembershipRepository) UpdateUserMembership(membership *models.UserMembership) error {
+func (r *membershipRepository) UpdateUserMembership(membership *models.UserMembership) error {
 	return r.db.Save(membership).Error
 }
 
-func (r *userMembershipRepository) GetMembershipItem(itemID uint) (*models.MembershipItem, error) {
+func (r *membershipRepository) GetMembershipItem(itemID uint) (*models.MembershipItem, error) {
 	var membershipItem models.MembershipItem
 	err := r.db.Where("id = ?", itemID).First(&membershipItem).Error
 
@@ -52,7 +56,7 @@ func (r *userMembershipRepository) GetMembershipItem(itemID uint) (*models.Membe
 	return &membershipItem, nil
 }
 
-func (r *userMembershipRepository) CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error {
+func (r *membershipRepository) CreateUserMembership(tx *gorm.DB, membership *models.UserMembership) error {
 	db := r.db
 	if tx != nil {
 		db = tx
@@ -60,8 +64,16 @@ func (r *userMembershipRepository) CreateUserMembership(tx *gorm.DB, membership 
 	return db.Create(membership).Error
 }
 
-func (r *userMembershipRepository) SumPaymentAmountByUserID(userId uint) (int64, error) {
+func (r *membershipRepository) SumPaymentAmountByUserID(userId uint) (int64, error) {
 	var total int64
 	err := r.db.Model(&models.UserMembership{}).Where("user_id = ?", userId).Select("COALESCE(SUM(amount), 0)").Scan(&total).Error
 	return total, err
+}
+
+func (r *membershipRepository) GetItemsByLocationID(locationID uint) ([]models.MembershipItem, error) {
+	var membershipItems []models.MembershipItem
+
+	err := r.db.Model(&models.MembershipItem{}).Where("location_id = ?", locationID).Find(&membershipItems).Error
+
+	return membershipItems, err
 }
