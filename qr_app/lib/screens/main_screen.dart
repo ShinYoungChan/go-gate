@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'qr_screen.dart';
 import 'my_page_screen.dart';
-import '../services/api_service.dart'; // 💡 ApiService 임포트 확인
+import 'payment_history_screen.dart';
+import '../services/api_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -85,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     // 탭별로 보여줄 화면 설정
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       // [0번: 홈 탭] - 인사말을 리스트 상단에 포함
       _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -135,7 +136,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
 
       // [1번: 결제 탭]
-      const Center(child: Text("결제 내역")),
+      PaymentHistoryScreen(userId: _fixedUserId),
 
       // [2번: 내 정보 탭]
       MyPageScreen(
@@ -145,10 +146,26 @@ class _MainScreenState extends State<MainScreen> {
       ),
     ];
 
+    final List<String?> tabTitles = [null, '결제 내역', null];
+
     return Scaffold(
       backgroundColor: Colors.white,
-      // AppBar를 아예 삭제하면 본문이 폰 맨 위(시계 있는 곳)까지 올라가므로 SafeArea를 사용
-      body: SafeArea(child: _pages[_selectedIndex]),
+      appBar: tabTitles[_selectedIndex] != null
+          ? AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: false,
+              title: Text(
+                tabTitles[_selectedIndex]!,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
+      body: SafeArea(child: pages[_selectedIndex]),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,

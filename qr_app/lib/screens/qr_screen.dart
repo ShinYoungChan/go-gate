@@ -146,12 +146,25 @@ class _QRScreenState extends State<QRScreen> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                widget.location['ImageURL'],
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-              ),
+              child: widget.location['ImageURL'] != null
+                  ? Image.network(
+                      widget.location['ImageURL'],
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 60,
+                        height: 60,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.image_not_supported, size: 28),
+                      ),
+                    )
+                  : Container(
+                      width: 60,
+                      height: 60,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.location_on, size: 28, color: Colors.grey),
+                    ),
             ),
             const SizedBox(width: 15),
             Column(
@@ -295,16 +308,20 @@ class _QRScreenState extends State<QRScreen> {
         ),
         const SizedBox(height: 24),
         ElevatedButton(
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            final result = await Navigator.push<bool>(
               context,
               MaterialPageRoute(
                 builder: (context) => MembershipPurchaseScreen(
-                  locationId: widget.location['ID'], // 현재 QR 화면이 들고 있는 지점 ID 전달
-                  locationName: widget.location['PlaceName'], // (선택) 화면 상단에 보여줄 이름
+                  locationId: widget.location['ID'],
+                  locationName: widget.location['PlaceName'],
                 ),
               ),
             );
+            // 결제 성공 후 돌아오면 QR 화면 재초기화
+            if (result == true && mounted) {
+              _checkAndInitialize();
+            }
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
