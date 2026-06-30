@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
 import 'package:intl/intl.dart';
+import '../services/api_service.dart';
+import 'login_screen.dart';
 
 class MyPageScreen extends StatefulWidget {
   final String userName;
@@ -60,19 +61,20 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   String formatJoinDate(String rawDate) {
-    // rawDate가 "2026-01-01 01:00:00 ..." 일 때
-    List<String> parts = rawDate
-        .split(' ')[0]
-        .split('-'); // ['2026', '01', '01']
-    return "${parts[0]}년 ${parts[1]}월 ${parts[2]}일";
+    if (rawDate.isEmpty) return '-';
+    try {
+      final parts = rawDate.split(' ')[0].split('-');
+      if (parts.length < 3) return rawDate;
+      return "${parts[0]}년 ${parts[1]}월 ${parts[2]}일";
+    } catch (_) {
+      return rawDate;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Colors.blue)),
-      );
+      return const Center(child: CircularProgressIndicator(color: Colors.blue));
     }
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -106,9 +108,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     CircleAvatar(
                       radius: 35,
                       backgroundColor: Colors.blue.shade600,
-                      child: const Text(
-                        "1",
-                        style: TextStyle(color: Colors.white, fontSize: 24),
+                      child: Text(
+                        widget.userName.isNotEmpty
+                            ? widget.userName[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(color: Colors.white, fontSize: 24),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -221,7 +225,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
             height: 55,
             child: ElevatedButton.icon(
               onPressed: () {
-                // 로그아웃 로직
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
               },
               icon: const Icon(Icons.logout, color: Colors.white),
               label: const Text(

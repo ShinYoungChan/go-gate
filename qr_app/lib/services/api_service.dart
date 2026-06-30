@@ -84,11 +84,32 @@ class ApiService {
     }
   }
 
-  Future<Response?> getLocationMemberships(String locationId) async{
-    try{
+  Future<Response?> getLocationMemberships(String locationId) async {
+    try {
       return await dio.get('/location/membership/$locationId');
-    }on DioException catch(e){
+    } on DioException catch (e) {
       print("멤버쉽 정보 로드 실패: ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> getPaymentHistory(String userId) async {
+    try {
+      return await dio.get('/payments/history/$userId');
+    } on DioException catch (e) {
+      print("결제 내역 로드 실패: ${e.message}");
+      return e.response;
+    }
+  }
+
+  Future<Response?> signUp(String name, String email, String password) async {
+    try {
+      return await dio.post(
+        '/signup',
+        data: {'name': name, 'email': email, 'password': password},
+      );
+    } on DioException catch (e) {
+      print("회원가입 에러: ${e.message}");
       return e.response;
     }
   }

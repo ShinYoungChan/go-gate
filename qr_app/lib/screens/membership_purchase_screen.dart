@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // 금액 포맷팅용 (pubspec.yaml에 추가 필요)
-import 'dart:convert';
-
-import 'package:qr_app/services/api_service.dart';
+import 'package:intl/intl.dart';
 import '../services/api_service.dart';
 
 class MembershipPurchaseScreen extends StatefulWidget {
@@ -52,15 +49,13 @@ class _MembershipPurchaseScreenState extends State<MembershipPurchaseScreen> {
         });
       }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('오류 발생: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('오류 발생: $e')),
+        );
+      }
     } finally {
-      // 💡 성공하든 실패하든 결국 로딩 상태를 false로 변경!
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
